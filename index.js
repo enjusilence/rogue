@@ -240,8 +240,6 @@ class Canvas {
         }
       }
     }
-    // console.log(layout);
-    // console.log(emptyCells);
     return emptyCells;
   }
   checkLineOfSight({ x1, y1, x2, y2 }) {
@@ -250,7 +248,6 @@ class Canvas {
     const tilesToCheck = getLineOfSightTiles({ x1, y1, x2, y2 });
     for (const tile of tilesToCheck) {
       const { x, y } = tile;
-      // console.log(x, y, this.getCell(x, y));
       if (this.getCell(x, y) === TileStates.Wall) return false;
     }
     return true;
@@ -498,7 +495,6 @@ class Enemy extends Character {
     } else if (y > this.y) {
       newDirection = Directions.Down;
     } else newDirection = Directions.Up;
-    console.log(newDirection);
     this.face = newDirection;
   }
   turnFace(lastFace = null) {
@@ -543,7 +539,6 @@ function randomMultipleNumbers(minValue, maxValue, amount) {
     (_, i) => i + minValue
   );
   const shuffledArray = shuffleArray(array).slice(0, amount);
-  // console.log(shuffledArray);
   return shuffledArray;
 }
 
@@ -596,41 +591,38 @@ function getLineOfSightTiles({ x1, y1, x2, y2 }) {
 
 function checkLayoutValidity(array) {
   if (!array) return false;
-  let arr = JSON.parse(JSON.stringify(array));
-  let rows = arr.length,
-    cols = arr[0].length;
-
-  let islands = 0;
-  let eaten = [];
-
-  let left = 0,
-    up = 0;
-
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      if (!arr[row][col]) {
-        continue;
-      }
-      if (arr[row][col] === TileStates.Wall) {
-        arr[row][col] = 0;
-      } else {
-        arr[row][col] = 1;
-      }
-      left = col > 0 ? arr[row][col - 1] : 0;
-
-      up = row > 0 ? arr[row - 1][col] : 0;
-      if (!left && !up) {
-        islands++;
-        arr[row][col] = islands;
-      } else if (left && up && left !== up) {
-        arr[row][col] = left;
-        eaten.push(up);
-      } else if (left) {
-        arr[row][col] = left;
-      } else if (up) {
-        arr[row][col] = up;
+  let grid = JSON.parse(JSON.stringify(array));
+  const gridLength = grid.length;
+  const rowLength = grid[0].length;
+  let count = 0;
+  // Loop through every cell in the grid
+  for (let i = 0; i < gridLength; i++) {
+    for (let j = 0; j < rowLength; j++) {
+      // When we hit land we know we are on an island
+      // We will use this cell to visit all the 1's connected to it
+      // Once we've visited all the 1's connected to this cell then we increase the count
+      if (grid[i][j] === "") {
+        dfs(i, j);
+        count++;
       }
     }
   }
-  return islands - eaten.length === 1;
+
+  // DFS search
+  // Look in all directions and set the current cell to 0 to prevent this cell from being visited again
+  function dfs(i, j) {
+    if (grid[i][j] === "") {
+      grid[i][j] = "W";
+      // look north
+      if (i - 1 >= 0) dfs(i - 1, j);
+      // look east
+      if (j + 1 < rowLength) dfs(i, j + 1);
+      // look south
+      if (i + 1 < gridLength) dfs(i + 1, j);
+      // look west
+      if (j - 1 >= 0) dfs(i, j - 1);
+    }
+  }
+  if (DEBUG) console.log(count);
+  return count === 1;
 }
