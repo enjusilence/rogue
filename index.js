@@ -154,13 +154,13 @@ class Canvas {
       healthBar.className = "health";
       healthBar.style = `width: ${entities[id].getHealthPercent()}%`;
       tileElement.appendChild(healthBar);
-      if (entities[id].healthChange !== 0) {
-        const message = document.createElement("span");
-        message.innerHTML = entities[id].healthChange;
-        message.className = "health-change";
-        message.style =
-          entities[id].healthChange > 0 ? "color: lightgreen" : "color: red";
-        tileElement.appendChild(message);
+      if (entities[id].createMessage()) {
+        const { message, color } = entities[id].createMessage();
+        const messageBox = document.createElement("span");
+        messageBox.innerHTML = message;
+        messageBox.className = "health-change";
+        messageBox.style = `color: ${color}`;
+        tileElement.appendChild(messageBox);
       }
     }
     return tileElement;
@@ -334,6 +334,7 @@ class Character extends Entity {
   constructor({ x, y, id, type, health, damage, canvas }) {
     super({ id, x, y, type });
     this.healthChange = 0;
+    this.message = "";
     this.canvas = canvas;
     this.maxHealth = health;
     this.currentHealth = health;
@@ -375,8 +376,18 @@ class Character extends Entity {
     [this.x, this.y] = [newX, newY];
     return true;
   }
-  resetHealthChange() {
+  clearStatus() {
     this.healthChange = 0;
+    this.message = 0;
+  }
+  createMessage() {
+    if (this.message) {
+      return { message: this.message, color: "white" };
+    } else if (this.healthChange > 0) {
+      return { message: `+${this.healthChange}`, color: "lightgreen" };
+    } else if (this.healthChange < 0) {
+      return { message: `${this.healthChange}`, color: "red" };
+    } else return null;
   }
   moveOnTile() {}
 }
@@ -394,8 +405,8 @@ class Player extends Character {
     });
   }
   action(action) {
-    Entity.getEnemyList().forEach((e) => e.resetHealthChange());
-    this.resetHealthChange();
+    Entity.getEnemyList().forEach((e) => e.clearStatus());
+    this.clearStatus();
     if (action === PlayerActions.Attack) return this.attack();
     if (!this.move(action)) return false;
     this.erase(this.canvas);
@@ -416,8 +427,10 @@ class Player extends Character {
   }
   pickUpSword() {
     this.damage += SWORD_BONUS_DAMAGE;
+    this.message = `+${SWORD_BONUS_DAMAGE} Damage`;
   }
   pickUpHealPot() {
+    if (this.currentHealth === this.maxHealth) this.message = "+0";
     this.healthChange = Math.min(
       HEAL_POT_HEALTH_REGEN,
       this.maxHealth - this.currentHealth
