@@ -56,6 +56,8 @@
         position: relative;
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
         width: 1000px;
         height: 600px;
         font-size: 10px;
@@ -106,7 +108,14 @@
       .health-change {
         font-size: 20px;
         font-weight: bold;
+        font-family: "Open Sans";
         animation: fade 2s forwards;
+      }
+      .end-game-message {
+        position: absolute;
+        z-index: 1000;
+        font-size: 200px;
+        text-transform: uppercase;
       }
       .inventory-box {
         border: 2px solid #d0d0d0;
@@ -121,9 +130,34 @@
         clear: both;
         display: block;
       }
+      .defeat {
+        color: darkred;
+        animation: defeat 3s ease-in-out;
+      }
+      .victory {
+        color: gold;
+        animation: victory 3s forwards;
+      }
       @keyframes fade {
         to {
           font-size: 0;
+        }
+      }
+      @keyframes defeat {
+        0% {
+          color: darkred;
+        }
+        50% {
+          color: red;
+        }
+        100% {
+          color: darkred;
+        }
+      }
+      @keyframes victory {
+        from {
+          transform: scale(0.9);
+          color: lightgreen;
         }
       }
     </style>

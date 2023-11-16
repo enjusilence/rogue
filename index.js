@@ -85,10 +85,12 @@ class Game {
     const injectedDOM = this.canvas.createDOMFragment(Entity.entities);
     this.root.innerHTML = "";
     this.root.append(injectedDOM);
-    if (!this.player.isAlive) this.gameOver();
+    if (!this.player.isAlive) this.endGame("defeat");
+    if (enemyList.length === 0) this.endGame("victory");
   }
-  gameOver() {
-    console.log("Game Over!");
+  endGame(result) {
+    this.root.prepend(this.canvas.createEndGameMessage(result));
+    console.log(result);
     this.root.removeEventListener("keyup", this.listener);
   }
   keyPressHandler(evt) {
@@ -164,6 +166,13 @@ class Canvas {
       }
     }
     return tileElement;
+  }
+  createEndGameMessage(result) {
+    const endGame = document.createElement("span");
+    endGame.className = "end-game-message";
+    endGame.classList.add(result);
+    endGame.innerHTML = result;
+    return endGame;
   }
   createBaseLayout() {
     return Array.from({ length: FIELD_WIDTH }, () =>
@@ -427,7 +436,7 @@ class Player extends Character {
   }
   pickUpSword() {
     this.damage += SWORD_BONUS_DAMAGE;
-    this.message = `+${SWORD_BONUS_DAMAGE} Damage`;
+    this.message = `+${SWORD_BONUS_DAMAGE}Damage`;
   }
   pickUpHealPot() {
     if (this.currentHealth === this.maxHealth) this.message = "+0";
