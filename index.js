@@ -154,6 +154,14 @@ class Canvas {
       healthBar.className = "health";
       healthBar.style = `width: ${entities[id].getHealthPercent()}%`;
       tileElement.appendChild(healthBar);
+      if (entities[id].healthChange !== 0) {
+        const message = document.createElement("span");
+        message.innerHTML = entities[id].healthChange;
+        message.className = "health-change";
+        message.style =
+          entities[id].healthChange > 0 ? "color: lightgreen" : "color: red";
+        tileElement.appendChild(message);
+      }
     }
     return tileElement;
   }
@@ -325,6 +333,7 @@ class Entity {
 class Character extends Entity {
   constructor({ x, y, id, type, health, damage, canvas }) {
     super({ id, x, y, type });
+    this.healthChange = 0;
     this.canvas = canvas;
     this.maxHealth = health;
     this.currentHealth = health;
@@ -342,6 +351,7 @@ class Character extends Entity {
   }
   takeHit(damage) {
     this.currentHealth = this.currentHealth - damage;
+    this.healthChange -= damage;
     if (this.currentHealth <= 0) this.kill();
   }
   kill() {
@@ -365,6 +375,9 @@ class Character extends Entity {
     [this.x, this.y] = [newX, newY];
     return true;
   }
+  resetHealthChange() {
+    this.healthChange = 0;
+  }
   moveOnTile() {}
 }
 
@@ -381,6 +394,8 @@ class Player extends Character {
     });
   }
   action(action) {
+    Entity.getEnemyList().forEach((e) => e.resetHealthChange());
+    this.resetHealthChange();
     if (action === PlayerActions.Attack) return this.attack();
     if (!this.move(action)) return false;
     this.erase(this.canvas);
@@ -403,6 +418,10 @@ class Player extends Character {
     this.damage += SWORD_BONUS_DAMAGE;
   }
   pickUpHealPot() {
+    this.healthChange = Math.min(
+      HEAL_POT_HEALTH_REGEN,
+      this.maxHealth - this.currentHealth
+    );
     this.currentHealth = Math.min(
       this.maxHealth,
       this.currentHealth + HEAL_POT_HEALTH_REGEN
@@ -422,6 +441,7 @@ class Player extends Character {
       case TileStates.Sword:
         this.pickUpSword();
         Entity.entities[id].pop();
+        break;
       case TileStates.HealPot:
         this.pickUpHealPot();
         Entity.entities[id].pop();

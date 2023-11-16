@@ -103,6 +103,11 @@
         top: 0px;
         height: 3px;
       }
+      .health-change {
+        font-size: 20px;
+        font-weight: bold;
+        animation: fade 2s forwards;
+      }
       .inventory-box {
         border: 2px solid #d0d0d0;
         float: left;
@@ -115,6 +120,11 @@
       .cl {
         clear: both;
         display: block;
+      }
+      @keyframes fade {
+        to {
+          font-size: 0;
+        }
       }
     </style>
   </head>
